@@ -1,12 +1,9 @@
-[![GoDoc](https://godoc.org/github.com/bvinc/go-sqlite-lite/sqlite3?status.svg)](https://godoc.org/github.com/bvinc/go-sqlite-lite/sqlite3)
-[![Build Status](https://travis-ci.com/bvinc/go-sqlite-lite.svg?branch=master)](https://travis-ci.com/bvinc/go-sqlite-lite)
-[![Build status](https://ci.appveyor.com/api/projects/status/xk6fpk23wb5ppdhx?svg=true)](https://ci.appveyor.com/project/bvinc/go-sqlite-lite)
-[![Coverage Status](https://coveralls.io/repos/github/bvinc/go-sqlite-lite/badge.svg?branch=master)](https://coveralls.io/github/bvinc/go-sqlite-lite?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bvinc/go-sqlite-lite)](https://goreportcard.com/report/github.com/bvinc/go-sqlite-lite)
+[![GoDoc](https://godoc.org/github.com/eatonphil/go-sqlite-lite?status.svg)](https://godoc.org/github.com/eatonphil/go-sqlite-lite)
 
 # go-sqlite-lite
 
-go-sqlite-lite is a SQLite driver for the Go programming language.  It is designed with the following goals in mind.
+go-sqlite-lite is a SQLite driver for the Go programming language.  It
+is designed with the following goals in mind.
 
 * **Lightweight** - Most methods should be little more than a small wrapper around SQLite C functions.
 * **Performance** - Where possible, methods should be available to allow for the highest performance possible.
@@ -15,7 +12,10 @@ go-sqlite-lite is a SQLite driver for the Go programming language.  It is design
 * **Debuggable** - When you encounter a SQLite error, the SQLite documentation should be relevant and relatable to the Go code.
 * **Ergonomic** - Where it makes sense, convenient compound methods should exist to make tasks easy and to conform to Go standard interfaces.
 
-Most database drivers include a layer to work nicely with the Go `database/sql` interface, which introduces connection pooling and behavior differences from pure SQLite.  This driver does not include a `database/sql` interface.
+Most database drivers include a layer to work nicely with the Go
+`database/sql` interface, which introduces connection pooling and
+behavior differences from pure SQLite.  This driver does not include a
+`database/sql` interface.
 
 ## Releases
 
@@ -35,7 +35,7 @@ Most database drivers include a layer to work nicely with the Go `database/sql` 
 ## Getting started
 
 ```go
-import "github.com/bvinc/go-sqlite-lite/sqlite3"
+import "github.com/bvinc/go-sqlite-lite"
 ```
 
 ### Acquiring a connection
@@ -225,24 +225,54 @@ This project began as a fork of https://github.com/mxk/go-sqlite/
 
 * **Why is there no `database/sql` interface?**
 
-If a `database/sql` interface is required, please use https://github.com/mattn/go-sqlite3 .  In my experience, using a `database/sql` interface with SQLite is painful.  Connection pooling causes unnecessary overhead and weirdness.  Transactions using `Exec("BEGIN")` don't work as expected.  Your connection does not correspond to SQLite's concept of a connection.  PRAGMA commands do not work as expected.  When you hit SQLite errors, such as locking or busy errors, it's difficult to discover why since you don't know which connection received which SQL and in what order.
+If a `database/sql` interface is required, please use
+https://github.com/mattn/go-sqlite3 .  In my experience, using a
+`database/sql` interface with SQLite is painful.  Connection pooling
+causes unnecessary overhead and weirdness.  Transactions using
+`Exec("BEGIN")` don't work as expected.  Your connection does not
+correspond to SQLite's concept of a connection.  PRAGMA commands do
+not work as expected.  When you hit SQLite errors, such as locking or
+busy errors, it's difficult to discover why since you don't know which
+connection received which SQL and in what order.
 
 * **What are the differences between this driver and the mxk/go-sqlite driver?**
 
-This driver was forked from `mxk/go-sqlite-driver`.  It hadn't been maintained in years and used an ancient version of SQLite.  A large number of features were removed, reworked, and renamed.  A lot of smartness and state was removed.  It is now much easier to upgrade to newer versions of SQLite since the `codec` feature was removed.  The behavior of methods now lines up closely with the behavior of SQLite's C API.
+This driver was forked from `mxk/go-sqlite-driver`.  It hadn't been
+maintained in years and used an ancient version of SQLite.  A large
+number of features were removed, reworked, and renamed.  A lot of
+smartness and state was removed.  It is now much easier to upgrade to
+newer versions of SQLite since the `codec` feature was removed.  The
+behavior of methods now lines up closely with the behavior of SQLite's
+C API.
 
 * **What are the differences between this driver and the crawshaw/sqlite driver?**
 
-The crawshaw driver is pretty well thought out and solves a lot of the same problems as this
-driver.  There are a few places where our philosophies differ.  The crawshaw driver defaults (when flags of 0 are given) to SQLite shared cache mode and WAL mode.  The default WAL synchronous mode is changed.  Prepared statements are transparently cached.  Connection pools are provided.  I would be opposed to making most of these changes to this driver.  I would like this driver to provide a default, light, and unsurprising SQLite experience.
+The crawshaw driver is pretty well thought out and solves a lot of the
+same problems as this driver.  There are a few places where our
+philosophies differ.  The crawshaw driver defaults (when flags of 0
+are given) to SQLite shared cache mode and WAL mode.  The default WAL
+synchronous mode is changed.  Prepared statements are transparently
+cached.  Connection pools are provided.  I would be opposed to making
+most of these changes to this driver.  I would like this driver to
+provide a default, light, and unsurprising SQLite experience.
 
 * **Are finalizers provided to automatically close connections and statements?**
 
-No finalizers are used in this driver.  You are responsible for closing connections and statements.  While I mostly agree with finalizers for cleaning up most accidental resource leaks, in this case, finalizers may fix errors such as locking errors while debugging only to find that the code works unreliably in production.  Removing finalizers makes the behavior consistent.
+No finalizers are used in this driver.  You are responsible for
+closing connections and statements.  While I mostly agree with
+finalizers for cleaning up most accidental resource leaks, in this
+case, finalizers may fix errors such as locking errors while debugging
+only to find that the code works unreliably in production.  Removing
+finalizers makes the behavior consistent.
 
 * **Is it thread safe?**
 
-go-sqlite-lite is as thread safe as SQLite.  SQLite with this driver is compiled with `-DSQLITE_THREADSAFE=2` which is **Multi-thread** mode.  In this mode, SQLite can be safely used by multiple threads provided that no single database connection is used simultaneously in two or more threads.  This applies to goroutines.  A single database connection should not be used simultaneously between two goroutines.
+go-sqlite-lite is as thread safe as SQLite.  SQLite with this driver
+is compiled with `-DSQLITE_THREADSAFE=2` which is **Multi-thread**
+mode.  In this mode, SQLite can be safely used by multiple threads
+provided that no single database connection is used simultaneously in
+two or more threads.  This applies to goroutines.  A single database
+connection should not be used simultaneously between two goroutines.
 
 It is safe to use separate connection instances concurrently, even if they are accessing the same database file. For example:
 ```go
