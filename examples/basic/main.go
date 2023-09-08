@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/eatonphil/go-sqlite-lite"
+	"github.com/eatonphil/gosqlite"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 }
 
 func main2() error {
-	conn, err := sqlite3.Open("mydatabase.db")
+	conn, err := gosqlite.Open("mydatabase.db")
 	if err != nil {
 		return fmt.Errorf("failed to open database: %v", err)
 	}
@@ -45,7 +45,7 @@ func main2() error {
 	return nil
 }
 
-func insertStudents(conn *sqlite3.Conn) error {
+func insertStudents(conn *gosqlite.Conn) error {
 	// Create a prepared statement
 	stmt, err := conn.Prepare(`INSERT INTO student VALUES (?, ?)`)
 	if err != nil {
@@ -79,7 +79,7 @@ func insertStudents(conn *sqlite3.Conn) error {
 	return nil
 }
 
-func queryStudents(conn *sqlite3.Conn) error {
+func queryStudents(conn *gosqlite.Conn) error {
 	// Prepare can prepare a statement and optionally also bind arguments
 	stmt, err := conn.Prepare(`SELECT * FROM student WHERE age = ?`, 18)
 	if err != nil {

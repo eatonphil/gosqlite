@@ -19,17 +19,17 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-package sqlite3_test
+package gosqlite_test
 
 import (
 	"bytes"
 	"reflect"
 	"testing"
 
-	"github.com/bvinc/go-sqlite-lite/sqlite3"
+	"github.com/eatonphil/gosqlite"
 )
 
-func initT(t *testing.T, conn *sqlite3.Conn) {
+func initT(t *testing.T, conn *gosqlite.Conn) {
 	err := conn.Exec(`INSERT INTO t (c1, c2, c3) VALUES ("1", "2", "3");`)
 	if err != nil {
 		t.Fatal(err)
@@ -41,8 +41,8 @@ func initT(t *testing.T, conn *sqlite3.Conn) {
 	}
 }
 
-func fillSession(t *testing.T) (*sqlite3.Conn, *sqlite3.Session) {
-	conn, err := sqlite3.Open(":memory:")
+func fillSession(t *testing.T) (*gosqlite.Conn, *gosqlite.Session) {
+	conn, err := gosqlite.Open(":memory:")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,13 +125,13 @@ func TestChangeset(t *testing.T) {
 		t.Errorf("changeset has no length")
 	}
 
-	iter, err := sqlite3.ChangesetIterStart(bytes.NewReader(b))
+	iter, err := gosqlite.ChangesetIterStart(bytes.NewReader(b))
 	if err != nil {
 		t.Fatal(err)
 	}
 	numChanges := 0
 	num3Cols := 0
-	opTypes := make(map[sqlite3.OpType]int)
+	opTypes := make(map[gosqlite.OpType]int)
 	for {
 		hasRow, err := iter.Next()
 		if err != nil {
@@ -159,7 +159,7 @@ func TestChangeset(t *testing.T) {
 	if num3Cols != 102 {
 		t.Errorf("num3Cols=%d, want 102", num3Cols)
 	}
-	if got := opTypes[sqlite3.INSERT]; got != 100 {
+	if got := opTypes[gosqlite.INSERT]; got != 100 {
 		t.Errorf("num inserts=%d, want 100", got)
 	}
 	if err := iter.Close(); err != nil {
@@ -183,7 +183,7 @@ func TestChangesetInvert(t *testing.T) {
 	b := buf.Bytes()
 
 	buf = new(bytes.Buffer)
-	if err := sqlite3.ChangesetInvert(buf, bytes.NewReader(b)); err != nil {
+	if err := gosqlite.ChangesetInvert(buf, bytes.NewReader(b)); err != nil {
 		t.Fatal(err)
 	}
 	invB := buf.Bytes()
@@ -195,7 +195,7 @@ func TestChangesetInvert(t *testing.T) {
 	}
 
 	buf = new(bytes.Buffer)
-	if err := sqlite3.ChangesetInvert(buf, bytes.NewReader(invB)); err != nil {
+	if err := gosqlite.ChangesetInvert(buf, bytes.NewReader(invB)); err != nil {
 		t.Fatal(err)
 	}
 	invinvB := buf.Bytes()
@@ -220,7 +220,7 @@ func TestChangesetApply(t *testing.T) {
 	b := buf.Bytes()
 
 	invBuf := new(bytes.Buffer)
-	if err := sqlite3.ChangesetInvert(invBuf, bytes.NewReader(b)); err != nil {
+	if err := gosqlite.ChangesetInvert(invBuf, bytes.NewReader(b)); err != nil {
 		t.Fatal(err)
 	}
 
@@ -317,9 +317,9 @@ func TestPatchsetApply(t *testing.T) {
 			return false
 		}
 	}
-	conflictFn := func(sqlite3.ConflictType, sqlite3.ChangesetIter) sqlite3.ConflictAction {
+	conflictFn := func(gosqlite.ConflictType, gosqlite.ChangesetIter) gosqlite.ConflictAction {
 		t.Error("conflict applying patchset")
-		return sqlite3.CHANGESET_ABORT
+		return gosqlite.CHANGESET_ABORT
 	}
 	if err := conn.ChangesetApply(bytes.NewReader(b), filterFn, conflictFn); err != nil {
 		t.Fatal(err)
@@ -351,8 +351,8 @@ func TestPatchsetApply(t *testing.T) {
 
 	// Second application of patchset should fail.
 	haveConflict := false
-	conflictFn = func(ct sqlite3.ConflictType, iter sqlite3.ChangesetIter) sqlite3.ConflictAction {
-		if ct == sqlite3.CHANGESET_CONFLICT {
+	conflictFn = func(ct gosqlite.ConflictType, iter gosqlite.ChangesetIter) gosqlite.ConflictAction {
+		if ct == gosqlite.CHANGESET_CONFLICT {
 			haveConflict = true
 		} else {
 			t.Errorf("unexpected conflict type: %v", ct)
@@ -361,14 +361,14 @@ func TestPatchsetApply(t *testing.T) {
 		if err != nil {
 			t.Errorf("conflict iter.Op() error: %v", err)
 		}
-		if opType != sqlite3.INSERT {
+		if opType != gosqlite.INSERT {
 			t.Errorf("unexpected conflict op type: %v", opType)
 		}
-		return sqlite3.CHANGESET_ABORT
+		return gosqlite.CHANGESET_ABORT
 	}
 	err = conn.ChangesetApply(bytes.NewReader(b), nil, conflictFn)
-	sqlite_err, _ := err.(*sqlite3.Error)
-	if code := sqlite_err.Code(); code != sqlite3.ABORT {
+	sqlite_err, _ := err.(*gosqlite.Error)
+	if code := sqlite_err.Code(); code != gosqlite.ABORT {
 		t.Errorf("conflicting changeset Apply error is %v, want SQLITE_ABORT", err)
 	}
 	if !haveConflict {

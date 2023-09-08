@@ -6,7 +6,7 @@
 // designed to be simple, lightweight, performant, understandable,
 // unsurprising, debuggable, ergonomic, and fully featured.  This driver does
 // not provide a database/sql interface.
-package sqlite3
+package gosqlite
 
 /*
 // SQLite compilation options.
