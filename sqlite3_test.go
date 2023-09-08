@@ -829,7 +829,7 @@ func TestSchema(T *testing.T) {
 	t.step(s, true)
 
 	checkCols(s, "a")
-	checkDecls(s, "int")
+	checkDecls(s, "INT")
 	var a interface{}
 	t.scan(s, &a)
 	if a != int64(1) {
@@ -841,7 +841,7 @@ func TestSchema(T *testing.T) {
 	t.step(s, true)
 
 	checkCols(s, "a")
-	checkDecls(s, "int")
+	checkDecls(s, "INT")
 	t.scan(s, &a)
 	if a != int64(2) {
 		t.Fatal("Expected 2")
@@ -849,12 +849,12 @@ func TestSchema(T *testing.T) {
 	t.step(s, false)
 
 	checkCols(s, "a")
-	checkDecls(s, "int")
+	checkDecls(s, "INT")
 	t.reset(s)
 	t.step(s, true)
 
 	checkCols(s, "a", "b")
-	checkDecls(s, "int", "text")
+	checkDecls(s, "INT", "TEXT")
 	var b interface{}
 	t.scan(s, &a, &b)
 	if a != int64(1) {
@@ -866,7 +866,7 @@ func TestSchema(T *testing.T) {
 	t.step(s, true)
 
 	checkCols(s, "a", "b")
-	checkDecls(s, "int", "text")
+	checkDecls(s, "INT", "TEXT")
 	t.scan(s, &a, &b)
 	if a != int64(2) {
 		t.Fatal("Expected 2")
