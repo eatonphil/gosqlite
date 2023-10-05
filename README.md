@@ -27,6 +27,7 @@ behavior differences from pure SQLite.  This driver does not include a
 
 ## Releases
 
+* 2023-09-08 **v0.8.0** - SQLite version 3.43.1
 * 2023-09-08 **v0.7.0** - SQLite version 3.43.0
 * 2023-09-08 - Forked from https://github.com/bvinc/go-sqlite-lite
 
