@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION=3430100
+VERSION=3430200
 wrk="$(pwd)"
 pushd "$(mktemp -d)"
 wget "https://www.sqlite.org/2023/sqlite-src-$VERSION.zip"
