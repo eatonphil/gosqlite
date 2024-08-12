@@ -102,12 +102,18 @@ int go_commit_hook(void*);
 void go_rollback_hook(void*);
 void go_update_hook(void* data, int op,const char *db, const char *tbl, sqlite3_int64 row);
 int go_set_authorizer(void* data, int op, const char *arg1, const char *arg2, const char *db, const char *entity);
+void go_error_log(void*, int, char*);
 
 SET(busy_handler)
 SET(commit_hook)
 SET(rollback_hook)
 SET(update_hook)
 SET(set_authorizer)
+
+static int set_error_log_func(int enable) {
+	void *cb = enable ? &go_error_log : NULL;
+	return sqlite3_config(SQLITE_CONFIG_LOG, cb, NULL);
+}
 
 // A pointer to an instance of this structure is passed as the user-context
 // pointer when registering for an unlock-notify callback.
@@ -244,6 +250,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync/atomic"
 	"time"
 	"unsafe"
 )
@@ -260,6 +267,8 @@ var commitRegistry = newRegistry()
 var rollbackRegistry = newRegistry()
 var updateRegistry = newRegistry()
 var authorizerRegistry = newRegistry()
+
+var errorLogCallback atomic.Value
 
 func init() {
 	// Initialize SQLite (required with SQLITE_OMIT_AUTOINIT).
@@ -1281,6 +1290,22 @@ func blob(stmt *C.sqlite3_stmt, i C.int, copy bool) []byte {
 			return C.GoBytes(p, n)
 		}
 		return goBytes(p, n)
+	}
+	return nil
+}
+
+// SetErrorLogFunc registers a function that is invoked by SQLite whenever
+// an anomaly occurs. It is good practice to hook this up to your application's
+// logging framework, in order to aid debugging.
+// https://sqlite.org/errlog.html
+func SetErrorLogFunc(f ErrorLogFunc) error {
+	var enable C.int = 0
+	if f != nil {
+		enable = 1
+		errorLogCallback.Store(f)
+	}
+	if rc := C.set_error_log_func(enable); rc != 0 {
+		return errStr(rc)
 	}
 	return nil
 }

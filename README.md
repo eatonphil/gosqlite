@@ -223,9 +223,10 @@ func insertStudents(conn *gosqlite.Conn) error {
 * SQLite Blob Incremental IO API.
 * SQLite Online Backup API.
 * SQLite Session extension.
-* Supports setting a custom busy handler
+* Supports setting a custom busy handler.
 * Supports callback hooks on commit, rollback, and update.
-* Supports setting compile-Time authorization callbacks.
+* Supports setting compile-time authorization callbacks.
+* Supports setting [SQLite error/warning log callback](https://sqlite.org/errlog.html).
 * If shared cache mode is enabled and one statement receives a
   `SQLITE_LOCKED` error, the SQLite
   [unlock_notify](https://sqlite.org/unlock_notify.html) extension is
