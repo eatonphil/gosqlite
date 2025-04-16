@@ -1105,6 +1105,55 @@ func TestBusyHandler(T *testing.T) {
 	try("INSERT INTO x VALUES(5)")
 }
 
+func TestErrorLogFunc(T *testing.T) {
+	t := begin(T)
+
+	c := t.open(":memory:")
+	defer t.close(c)
+
+	var errorLogged bool
+	var loggedCode int
+	var loggedCodeStr string
+	var loggedMsg string
+	err := SetErrorLogFunc(func(code int, codeStr, msg string) {
+		errorLogged = true
+		loggedCode = code
+		loggedCodeStr = codeStr
+		loggedMsg = msg
+	})
+	if err != nil {
+		t.Fatal("Failed to set error logger:", err)
+	}
+
+	t.exec(c, `SELECT "a"`)
+
+	if !errorLogged {
+		t.Fatal("No error was logged")
+	}
+	if loggedCode != WARNING {
+		t.Fatalf("Unexpected error log code: %d", loggedCode)
+	}
+	if loggedCodeStr != "warning message" {
+		t.Fatalf("Unexpected error log code string: '%s'", loggedCodeStr)
+	}
+	if !strings.Contains(loggedMsg, "double-quoted string literal") {
+		t.Fatalf("Unexpected error log message: '%s'", loggedMsg)
+	}
+
+	errorLogged = false
+	err = SetErrorLogFunc(nil)
+	if err != nil {
+		t.Fatal("Failed to unset error logger:", err)
+	}
+
+	t.exec(c, `SELECT "b"`)
+
+	if errorLogged {
+		t.Fatalf("Unexpected error logged: %d, '%s', '%s'", loggedCode,
+			loggedCodeStr, loggedMsg)
+	}
+}
+
 func TestLocked(T *testing.T) {
 	t := begin(T)
 	defer t.skipRestIfFailed()

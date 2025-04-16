@@ -87,6 +87,12 @@ type Value struct {
 // queried with Conn.Limit(LIMIT_LENGTH, -1).
 type ZeroBlob int
 
+// ErrorLogFunc is a callback function invoked by SQLite whenever anomalies
+// occur. Code is the error code indicating the category of what
+// happened (e.g. WARNING), codeStr is a string representation of the
+// same, and message is the detailed log message.
+type ErrorLogFunc func(code int, codeStr, message string)
+
 // BusyFunc is a callback function invoked by SQLite when it is unable to
 // acquire a lock on a table. Count is the number of times that the callback has
 // been invoked for this locking event so far. If the function returns false,
@@ -382,4 +388,10 @@ func go_set_authorizer(data unsafe.Pointer, op C.int, arg1, arg2, db, entity *C.
 	idx := *(*int)(data)
 	fn := authorizerRegistry.lookup(idx).(AuthorizerFunc)
 	return C.int(fn(int(op), raw(goStr(arg1)), raw(goStr(arg2)), raw(goStr(db)), raw(goStr(entity))))
+}
+
+//export go_error_log
+func go_error_log(_ unsafe.Pointer, errCode C.int, msg *C.char) {
+	fn := errorLogCallback.Load().(ErrorLogFunc)
+	fn(int(errCode), C.GoString(C.sqlite3_errstr(errCode)), C.GoString(msg))
 }
